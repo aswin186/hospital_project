@@ -4,11 +4,13 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from auth_app.decorators import session_login_required
 import time
 
 from .helper_fun import get_patient_data, get_patient_info_by_user, get_doctor_info_by_user
 
 
+@session_login_required
 def list_patients(request):
     page = int(request.GET.get("page", 1))  # current page
     per_page = 2
@@ -77,6 +79,7 @@ GENDER_CHOICES = ['Male', 'Female', 'Other']
 BLOOD_GROUP_CHOICES = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 
 
+@session_login_required
 def patient_create_edit(request, user_id=None):
     """Render create/edit patient form with merged patient data"""
     patient = get_patient_data(user_id) if user_id else None
@@ -91,7 +94,9 @@ def patient_create_edit(request, user_id=None):
     return render(request, "patients_cu.html", context)
 
 
+
 @csrf_exempt
+@session_login_required
 def save_patient(request):
     """Handle create/update POST request including users table"""
     if request.method != "POST":
@@ -207,6 +212,7 @@ def save_patient(request):
             conn.close()
 
 
+@session_login_required
 def patient_profile(request, user_id):
     patient = get_patient_info_by_user(user_id)
     if not patient:
@@ -217,7 +223,7 @@ def patient_profile(request, user_id):
     return render(request, "patients_r.html", context)
 
 
-
+@session_login_required
 def list_doctors(request):
     """List doctors with pagination"""
     page = int(request.GET.get("page", 1))
@@ -283,6 +289,8 @@ def list_doctors(request):
     return render(request, "doctors_l.html", context)
 
 
+
+@session_login_required
 def doctor_profile(request, user_id):
     doctor = get_doctor_info_by_user(user_id)
     if not doctor:

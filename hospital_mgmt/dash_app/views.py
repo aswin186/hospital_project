@@ -2,8 +2,10 @@ import mysql.connector
 from datetime import date, datetime
 from django.shortcuts import render
 from django.db import connection
+from auth_app.decorators import session_login_required
 
 
+@session_login_required
 def dashboard_view(request):
     today = date.today()
 

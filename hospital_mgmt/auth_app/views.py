@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
+from .decorators import session_login_required
 
 import mysql.connector
 
@@ -183,6 +184,8 @@ def register_user(request):
     return render(request, "register_user.html", {"roles": roles, "specializations": specializations})
 
 
+
+@session_login_required
 def logout_user(request):
     # Clear the user session
     request.session.flush()

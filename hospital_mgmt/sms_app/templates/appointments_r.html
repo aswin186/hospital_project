@@ -83,10 +83,11 @@
                         </a>
                     {% endif %}
                     {% if appointment.buttons.show_mark_complete %}
-                        <a href="{% url 'update_appointment_status' appointment.appointment_id 'mark_complete' %}"
-                            class="px-4 py-2 rounded text-sm font-medium bg-primary text-white hover:bg-primary/90">
+                        <button type="button"
+                            data-id="{{ appointment.appointment_id }}"
+                            class="mark-complete-btn mt-4 px-4 py-2 rounded text-sm font-medium bg-primary text-white hover:bg-primary/90">
                             Mark as Complete
-                        </a>
+                        </button>
                     {% endif %}
                 </div>
             </div>
@@ -114,12 +115,14 @@
                     class="w-full h-48 p-4 rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
                     readonly>{{ appointment.notes }}</textarea>
             </div>
-            <div>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Reports</h3>
-                <textarea
-                    class="w-full h-48 p-4 rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
-                    placeholder="Enter doctor's observations and reports here.">{{ appointment.report }}</textarea>
-            </div>
+            {% if appointment.buttons.show_mark_complete or appointment.status_name == "Completed" %}
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Reports</h3>
+                    <textarea id="report-{{ appointment.appointment_id }}"
+                        class="w-full h-48 p-4 rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+                        placeholder="Enter doctor's observations and reports here.">{% if appointment.status_name == "Completed" %}{{ appointment.report }}{% endif %}</textarea>
+                </div>
+            {% endif %}
         </div>
         {% else %}
             <p class="text-gray-500 dark:text-gray-400">Appointment not found.</p>
@@ -130,5 +133,39 @@
 {% endblock mainContent %}
 
 {% block internalScripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".mark-complete-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const appointmentId = btn.getAttribute("data-id");
+            const report = document.querySelector(`#report-${appointmentId}`).value;
+
+            fetch("{% url 'update_appointment_status' '0' 'mark_complete' %}".replace('0', appointmentId), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ report })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data, "########## data");
+                if(data.success) {
+                    alert("Appointment marked as complete!");
+                    window.location.reload();
+                } else {
+                    alert("Failed to update: " + (data.error || "Unknown error"));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("An error occurred.");
+            });
+        });
+    });
+});
+</script>
 
 {% endblock internalScripts %}

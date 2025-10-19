@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import JsonResponse
+from auth_app.decorators import session_login_required
 import mysql.connector
 from datetime import datetime, date
 import math
+import json
 
 
+
+@session_login_required
 def list_appointments(request):
     """List appointments with patient and doctor info (raw SQL)"""
     page = int(request.GET.get("page", 1))
@@ -50,7 +55,7 @@ def list_appointments(request):
             JOIN users u2 ON d.user_id = u2.id
             LEFT JOIN specialization sp ON d.specialization_id = sp.id
             LEFT JOIN appointment_status s ON a.status_id = s.id
-            ORDER BY a.appointment_date DESC, a.appointment_time ASC
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC
             LIMIT %s OFFSET %s
         """, (per_page, offset))
         appointments = cursor.fetchall()
@@ -82,6 +87,7 @@ def list_appointments(request):
 
 
 
+@session_login_required
 def appointment_create(request):
     patients = []
     doctors = []
@@ -158,7 +164,7 @@ def appointment_create(request):
             conn.commit()
 
             messages.success(request, "Appointment created successfully.")
-            return redirect("appointment_create")
+            return redirect("appointments_list")
 
     except mysql.connector.Error as err:
         messages.error(request, f"Database error: {err}")
@@ -177,6 +183,7 @@ def appointment_create(request):
 
 
 
+@session_login_required
 def appointment_detail(request, appointment_id):
     """Fetch appointment details and decide which buttons to show"""
     appointment = None
@@ -265,16 +272,22 @@ ACTION_STATUS_MAP = {
     "mark_as_arrived": "In-Progress",
     "mark_complete": "Completed",
     "cancel": "Cancelled",
-    "no_show": "No-Show"
+    "no_show": "No-Show",
 }
 
+# Helper for AJAX detection
+def is_ajax(request):
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
 
+@session_login_required
 def update_appointment_status(request, appointment_id, action):
     """
     Update appointment status based on the action.
-    action can be: 'mark_as_arrived', 'mark_complete', 'cancel', 'no_show'
+    For 'mark_complete', optionally accept 'report' from POST body (AJAX or form).
     """
     if action not in ACTION_STATUS_MAP:
+        if is_ajax(request):
+            return JsonResponse({"success": False, "error": "Invalid action"})
         messages.error(request, "Invalid action.")
         return redirect('appointment_detail', appointment_id=appointment_id)
 
@@ -293,35 +306,75 @@ def update_appointment_status(request, appointment_id, action):
         cursor.execute("SELECT id FROM appointment_status WHERE status_name = %s", (status_name,))
         status_row = cursor.fetchone()
         if not status_row:
-            messages.error(request, f"Status '{status_name}' not found in the database.")
+            err_msg = f"Status '{status_name}' not found in the database."
+            if is_ajax(request):
+                return JsonResponse({"success": False, "error": err_msg})
+            messages.error(request, err_msg)
             return redirect('appointment_detail', appointment_id=appointment_id)
 
         status_id = status_row['id']
 
-        # Optional: Validate allowed transitions
-        # For example, cannot mark a completed appointment as arrived
+        # Fetch the appointment
         cursor.execute("SELECT status_id, appointment_date FROM appointment WHERE id = %s", (appointment_id,))
         appointment = cursor.fetchone()
         if not appointment:
-            messages.error(request, "Appointment not found.")
+            err_msg = "Appointment not found."
+            if is_ajax(request):
+                return JsonResponse({"success": False, "error": err_msg})
+            messages.error(request, err_msg)
             return redirect('appointment_list')
 
-        # Example: Cannot mark future appointment as No-Show
+        # Validation: Cannot mark future appointment as No-Show
         if action == "no_show" and appointment["appointment_date"] >= date.today():
-            messages.error(request, "Cannot mark a future appointment as No-Show.")
+            err_msg = "Cannot mark a future appointment as No-Show."
+            if is_ajax(request):
+                return JsonResponse({"success": False, "error": err_msg})
+            messages.error(request, err_msg)
             return redirect('appointment_detail', appointment_id=appointment_id)
 
-        # Update status
-        cursor.execute("UPDATE appointment SET status_id = %s WHERE id = %s", (status_id, appointment_id))
+        # Prepare optional report
+        report = None
+        if action == "mark_complete":
+            if request.method == "POST" and request.content_type == "application/json":
+                try:
+                    data = json.loads(request.body)
+                    report = data.get("report", "")
+                except json.JSONDecodeError:
+                    report = ""
+            elif request.method == "POST":
+                report = request.POST.get("report", "")
+
+        # Update appointment
+        if report is not None:
+            cursor.execute("""
+                UPDATE appointment
+                SET status_id = %s, report = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (status_id, report, appointment_id))
+        else:
+            cursor.execute("""
+                UPDATE appointment
+                SET status_id = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (status_id, appointment_id))
+
         conn.commit()
 
+        # Success response
+        if is_ajax(request):
+            print("############################################# ajax #################################################################################################################################")
+            return JsonResponse({"success": True})
         messages.success(request, f"Appointment status updated to '{status_name}'.")
 
     except mysql.connector.Error as err:
+        if is_ajax(request):
+            return JsonResponse({"success": False, "error": str(err)})
         messages.error(request, f"Database error: {err}")
+
     finally:
         if conn.is_connected():
             cursor.close()
             conn.close()
 
+    # Normal redirect for non-AJAX requests
     return redirect('appointment_detail', appointment_id=appointment_id)
