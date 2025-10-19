@@ -1,0 +1,154 @@
+{% extends 'includes/dash_base.html' %}
+
+{% block internalStyles %}
+<style>
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+</style>
+{% endblock internalStyles %}
+
+{% block mainContent %}
+
+<main class="flex-1 overflow-y-auto p-6 lg:p-10">
+    <div class="mb-6 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+        <a class="hover:text-primary" href="{% url 'appointments_list' %}">Appointments</a>
+        <span class="material-symbols-outlined" style="font-size: 16px">chevron_right</span>
+        <span class="font-medium text-slate-700 dark:text-slate-200">Appointment Create</span>
+    </div>
+    <div class="max-w-4xl mx-auto space-y-8">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="p-3 rounded-lg text-sm font-semibold
+                            {% if message.tags == 'error' %}
+                                bg-red-100 text-red-800
+                            {% elif message.tags == 'success' %}
+                                bg-green-100 text-green-800
+                            {% else %}
+                                bg-gray-100 text-gray-800
+                            {% endif %}
+                        ">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <input type="hidden" id="selected_date" name="selected_date" value="">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Patient -->
+                <div class="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2"
+                        for="patient">Patient</label>
+                    <select
+                        class="form-select w-full rounded-lg border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-12 text-gray-900 dark:text-white"
+                        id="patient" name="patient" required>
+                        <option value="">Select Patient</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Doctor -->
+                <div class="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2"
+                        for="doctor">Doctor</label>
+                    <select
+                        class="form-select w-full rounded-lg border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-12 text-gray-900 dark:text-white"
+                        id="doctor" name="doctor" required>
+                        <option value="">Select Doctor</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">{{ doctor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Calendar and Time -->
+            <div class="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Include your working calendar JS/HTML here -->
+                    {% include "partials/calendar.html" %}
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2"
+                                for="time">Time</label>
+                            <select
+                                class="form-select w-full rounded-lg border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary h-12 text-gray-900 dark:text-white"
+                                id="time" name="time" required>
+                                <option value="">Select Time</option>
+                                {% for slot in time_slots %}
+                                <option value="{{ slot }}">{{ slot }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2" for="notes">Notes</label>
+                <textarea
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary focus:ring-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    id="notes" name="notes" placeholder="Add notes for the appointment" rows="4"></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-4 pt-4">
+                <a href="{% url 'appointments_list' %}"
+                    class="px-6 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="px-6 py-3 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90 transition-colors">
+                    Create Appointment
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+{% endblock mainContent %}
+
+{% block internalScripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const daysContainer = document.getElementById("calendarDays");
+    const selectedDateInput = document.getElementById("selected_date");
+
+    if (!daysContainer || !selectedDateInput) return;
+
+    daysContainer.addEventListener("click", (event) => {
+        const btn = event.target.closest("button");
+        if (!btn) return;
+
+        const year = btn.dataset.year;
+        const month = btn.dataset.month;
+        const day = btn.dataset.day;
+
+        if (year && month && day) {
+            const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            selectedDateInput.value = formattedDate;
+
+            // Optional: visually show which date is selected
+            document.querySelectorAll("#calendarDays button").forEach(b => b.classList.remove("bg-blue-500", "text-white"));
+            btn.classList.add("bg-blue-500", "text-white");
+        }
+    });
+});
+</script>
+
+{% endblock internalScripts %}

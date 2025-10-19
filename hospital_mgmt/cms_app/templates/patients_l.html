@@ -1,0 +1,190 @@
+{% extends 'includes/dash_base.html' %}
+
+{% block internalStyles %}
+
+<style>
+    .status-admitted {
+        background-color: rgba(17, 147, 212, 0.1);
+        color: #1193d4;
+    }
+
+    .status-discharged {
+        background-color: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+    }
+
+    .dark .status-admitted {
+        background-color: rgba(17, 147, 212, 0.2);
+        color: #1193d4;
+    }
+
+    .dark .status-discharged {
+        background-color: rgba(156, 163, 175, 0.2);
+        color: #9ca3af;
+    }
+</style>
+
+{% endblock internalStyles %}
+
+{% block mainContent %}
+
+<main class="flex-1 bg-background-light dark:bg-background-dark">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 rounded-lg text-sm font-semibold
+                        {% if message.tags == 'error' %}
+                            bg-red-100 text-red-800
+                        {% elif message.tags == 'success' %}
+                            bg-green-100 text-green-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <h2 class="text-3xl font-bold tracking-tight">Patient List</h2>
+            <a href="{% url 'patient_create' %}"
+                class="flex items-center justify-center gap-2 bg-primary text-white rounded-lg h-10 px-5 text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-xl"> add </span>
+                <span>Add Patient</span>
+            </a>
+        </div>
+        <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-sm">
+            <div class="p-4 sm:p-6 border-b border-subtle-light dark:border-subtle-dark">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-muted-light dark:text-muted-dark">
+                            search </span>
+                        <input
+                            class="w-full h-12 bg-background-light dark:bg-background-dark border border-subtle-light dark:border-subtle-dark rounded-lg pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            placeholder="Search by name" type="text" />
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead
+                        class="text-xs text-muted-light dark:text-muted-dark uppercase bg-background-light dark:bg-background-dark">
+                        <tr>
+                            <th class="px-6 py-3 font-medium">Patient</th>
+                            <th class="px-6 py-3 font-medium">Mobile No:</th>
+                            <th class="px-6 py-3 font-medium">Age</th>
+                            <th class="px-6 py-3 font-medium text-center">Gender</th>
+                            <th class="px-6 py-3" scope="col">
+                                <span class="sr-only">Actions</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr
+                            class="border-b border-subtle-light dark:border-subtle-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4 font-medium whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-subtle-light dark:bg-subtle-dark flex items-center justify-center font-bold text-primary">
+                                        {{ patient.patient_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-foreground-light dark:text-foreground-dark">
+                                            {{ patient.patient_name }}
+                                        </div>
+                                        <div class="text-muted-light dark:text-muted-dark">ID: {{ patient.patient_id }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-muted-light dark:text-muted-dark">{{ patient.mobile_number }}</td>
+                            <td class="px-6 py-4 text-muted-light dark:text-muted-dark">{{ patient.age }}</td>
+                            <td class="px-6 py-4 text-center">{{ patient.gender }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'patient_detail' patient.patient_id %}" 
+                                class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark" 
+                                title="View Patient">
+                                    <span class="material-symbols-outlined text-blue-500 dark:text-blue-400">
+                                        visibility
+                                    </span>
+                                </a>
+
+                                <a href="{% url 'patient_edit' patient.patient_id %}" 
+                                class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark" 
+                                title="Edit Patient">
+                                    <span class="material-symbols-outlined text-green-500 dark:text-green-400">
+                                        edit
+                                    </span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-muted-light dark:text-muted-dark">
+                                No patients found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="p-4 border-t border-subtle-light dark:border-subtle-dark flex items-center justify-between">
+                <span class="text-sm text-muted-light dark:text-muted-dark">
+                    Showing {{ start_item }}–{{ end_item }} of {{ total_patients }} results
+                </span>
+
+                <div class="flex items-center gap-2">
+                    <!-- Previous Page -->
+                    {% if page > 1 %}
+                    <a href="?page={{ page|add:-1 }}"
+                        class="h-8 w-8 flex items-center justify-center rounded-lg border border-subtle-light dark:border-subtle-dark hover:bg-subtle-light dark:hover:bg-subtle-dark">
+                        <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    </a>
+                    {% else %}
+                    <button
+                        class="h-8 w-8 flex items-center justify-center rounded-lg border border-subtle-light dark:border-subtle-dark opacity-50 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    </button>
+                    {% endif %}
+
+                    <!-- Page Numbers -->
+                    {% for i in pages %}
+                        {% if i == page %}
+                            <span
+                                class="h-8 w-8 flex items-center justify-center rounded-lg border border-primary bg-primary text-white text-sm font-medium">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}"
+                                class="h-8 w-8 flex items-center justify-center rounded-lg border border-subtle-light dark:border-subtle-dark hover:bg-subtle-light dark:hover:bg-subtle-dark text-sm font-medium">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+
+                    <!-- Next Page -->
+                    {% if page < total_pages %} <a href="?page={{ page|add:1 }}"
+                        class="h-8 w-8 flex items-center justify-center rounded-lg border border-subtle-light dark:border-subtle-dark hover:bg-subtle-light dark:hover:bg-subtle-dark">
+                        <span class="material-symbols-outlined text-lg">chevron_right</span>
+                        </a>
+                        {% else %}
+                        <button
+                            class="h-8 w-8 flex items-center justify-center rounded-lg border border-subtle-light dark:border-subtle-dark opacity-50 cursor-not-allowed">
+                            <span class="material-symbols-outlined text-lg">chevron_right</span>
+                        </button>
+                        {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+{% endblock mainContent %}
+
+{% block internalScripts %}
+
+{% endblock internalScripts %}

@@ -1,0 +1,17 @@
+<nav class="flex-1 space-y-2 p-4">
+    <a class="flex items-center gap-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary px-3 py-2 text-sm font-medium"
+        href="{% url 'patients_list' %}">
+        <span class="material-symbols-outlined">group</span>
+        Patients
+    </a>
+    <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-light dark:text-muted-dark hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary"
+        href="{% url 'doctors_list' %}">
+        <span class="material-symbols-outlined">person</span>
+        Doctors
+    </a>
+    <a class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-light dark:text-muted-dark hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary"
+        href="{% url 'appointments_list' %}">
+        <span class="material-symbols-outlined">calendar_month</span>
+        Appointments
+    </a>
+</nav>

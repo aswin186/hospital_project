@@ -1,0 +1,30 @@
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<header class="flex h-16 items-center justify-between border-b border-border-light dark:border-border-dark px-6">
+    <h2 class="text-2xl font-bold text-foreground-light dark:text-foreground-dark">Dashboard</h2>
+
+    <div class="relative" x-data="{ open: false }">
+        <!-- Profile Image -->
+        <button @click="open = !open" class="focus:outline-none">
+            <div class="h-10 w-10 rounded-full bg-cover bg-center border-2 border-gray-300"
+                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwxysB7c5lAyA8vNVORgZ6XHOdFHxXPbU-AXjjGa9x65ZWrSAGCX8mtknFmESKg1AzNS9o2b0A1xpfhb3SVxDULsHAVGH-MI9vfnauAGogi41p_7giLJX7bYDYSi72awP-BiK_z4Ygf2x4LQ_s-8b0n0ARnUvbPBHlbitiV2uHwTu8vd3kkJvnqcOZcgjrMi_8cXuwBurPCl1JAOLNhuudYSZRJI8cvfH_fL25R-FwC0jHaqKKIZpzmBBXuwcUmc-LNPFZ6u__CAs");'>
+            </div>
+        </button>
+
+        <!-- Dropdown -->
+        <div x-show="open" @click.away="open = false"
+            class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+            <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-100">
+                    {{ request.session.name }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">User Name: {{ request.session.username }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">User Id: {{ request.session.user_id }}</p>
+            </div>
+            <a href="{% url 'auth_logout' %}"
+                class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-red-400">
+                Logout
+            </a>
+        </div>
+    </div>
+</header>

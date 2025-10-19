@@ -1,0 +1,134 @@
+{% extends 'includes/dash_base.html' %}
+
+{% block internalStyles %}
+<style>
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+</style>
+{% endblock internalStyles %}
+
+{% block mainContent %}
+
+<main class="flex-1 p-6 sm:p-12">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <a class="hover:text-primary" href="{% url 'appointments_list' %}">Appointments</a>
+            <span class="material-symbols-outlined" style="font-size: 16px">chevron_right</span>
+            <span class="font-medium text-slate-700 dark:text-slate-200">Appointment Details</span>
+        </div>
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Appointment Details</h2>
+        </div>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 rounded-lg text-sm font-semibold
+                        {% if message.tags == 'error' %}
+                            bg-red-100 text-red-800
+                        {% elif message.tags == 'success' %}
+                            bg-green-100 text-green-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if appointment %}
+        <div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 mb-8">
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-gray-200 dark:border-gray-800">
+                <div>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white">{{ appointment.patient_name }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Appointment ID: {{ appointment.appointment_id }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Date: {{ appointment.appointment_date|date:"F j, Y" }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Time: {{ appointment.appointment_time }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Status: {{ appointment.status_name }}
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 mt-4 sm:mt-0">
+                    {% if appointment.buttons.show_mark_as_arrived %}
+                        <a href="{% url 'update_appointment_status' appointment.appointment_id 'mark_as_arrived' %}"
+                            class="px-4 py-2 rounded text-sm font-medium bg-primary text-white hover:bg-primary/90">
+                            Mark as Arrived
+                        </a>
+                    {% endif %}
+                    {% if appointment.buttons.show_cancel %}
+                        <a href="{% url 'update_appointment_status' appointment.appointment_id 'cancel' %}"
+                            class="px-4 py-2 rounded text-sm font-medium bg-primary/20 dark:bg-primary/30 text-primary hover:bg-primary/30 dark:hover:bg-primary/40">
+                            Cancel Appointment
+                        </a>
+                    {% endif %}
+                    {% if appointment.buttons.show_no_show %}
+                        <a href="{% url 'update_appointment_status' appointment.appointment_id 'no_show' %}"
+                            class="px-4 py-2 rounded text-sm font-medium bg-gray-400 text-white cursor-not-allowed">
+                            No-Show
+                        </a>
+                    {% endif %}
+                    {% if appointment.buttons.show_mark_complete %}
+                        <a href="{% url 'update_appointment_status' appointment.appointment_id 'mark_complete' %}"
+                            class="px-4 py-2 rounded text-sm font-medium bg-primary text-white hover:bg-primary/90">
+                            Mark as Complete
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Doctor Information</h3>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-800 dark:text-gray-200">{{ appointment.doctor_name }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Specialization: {{ appointment.specialization_name|default:"N/A" }}
+                        </p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Mobile: {{ appointment.doctor_mobile }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Notes</h3>
+                <textarea
+                    class="w-full h-48 p-4 rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+                    readonly>{{ appointment.notes }}</textarea>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Reports</h3>
+                <textarea
+                    class="w-full h-48 p-4 rounded bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+                    placeholder="Enter doctor's observations and reports here.">{{ appointment.report }}</textarea>
+            </div>
+        </div>
+        {% else %}
+            <p class="text-gray-500 dark:text-gray-400">Appointment not found.</p>
+        {% endif %}
+    </div>
+</main>
+
+{% endblock mainContent %}
+
+{% block internalScripts %}
+
+{% endblock internalScripts %}

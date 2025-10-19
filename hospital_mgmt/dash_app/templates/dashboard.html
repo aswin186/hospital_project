@@ -1,0 +1,88 @@
+{% extends 'includes/dash_base.html' %}
+
+{% block mainContent %}
+
+<main class="flex-1 p-6">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark">Today's Bookings
+                    </h3>
+                    <p class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{{ todays_bookings }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <span class="material-symbols-outlined text-primary text-3xl">book_online</span>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark">Available Doctors
+                    </h3>
+                    <p class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{{ total_doctors }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark">Upcoming
+                        Appointments</h3>
+                    <p class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">{{ upcoming_appointments }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <span class="material-symbols-outlined text-primary text-3xl">event</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">Today's Scheduled Appointments</h3>
+            <div class="space-y-4">
+            {% for a in todays_scheduled %}
+                <div class="flex items-start gap-4">
+                <div>
+                    <p class="text-sm font-medium">{{ a.patient_name }} with {{ a.doctor_name }}</p>
+                    <p class="text-xs text-muted-light">{{ a.appointment_time }}</p>
+                </div>
+                </div>
+            {% empty %}
+                <p class="text-sm text-gray-500">No scheduled appointments for today.</p>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="rounded-xl bg-card-light dark:bg-card-dark p-6 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4 text-foreground-light dark:text-foreground-dark">Doctor
+                Availability</h3>
+            <div class="space-y-4">
+                {% for doc in doctor_availability %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div>
+                        <p class="text-sm font-medium">{{ doc.doctor_name }}</p>
+                        <p class="text-xs text-muted-light">{{ doc.specialization }}</p>
+                        <p class="text-xs text-muted-light">Today: {{ doc.today_appointments }} appointments</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
+                            {% if doc.status == 'Available' %}
+                            bg-green-100 text-green-700
+                            {% else %}
+                            bg-red-100 text-red-700
+                            {% endif %}">
+                            {{ doc.status }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock mainContent %}

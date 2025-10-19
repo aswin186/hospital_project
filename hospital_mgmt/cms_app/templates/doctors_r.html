@@ -1,0 +1,131 @@
+{% extends 'includes/dash_base.html' %}
+
+{% block internalStyles %}
+
+{% endblock internalStyles %}
+
+{% block mainContent %}
+
+<main class="flex-1 overflow-y-auto">
+    <div class="p-8">
+        <div class="mb-6 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <a class="hover:text-primary" href="{% url 'doctors_list' %}">Doctors</a>
+            <span class="material-symbols-outlined" style="font-size: 16px">chevron_right</span>
+            <span class="font-medium text-slate-700 dark:text-slate-200">Doctor Details</span>
+        </div>
+        <div class="mb-8 flex items-center gap-6">
+            <div class="h-32 w-32 flex-shrink-0">
+                <img alt="Sophia Clark" class="h-full w-full rounded-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuADXiOov4UWY9uUEAUsJUgShDfAyKPxDzOqFBp0AG2gTwGrB3Q6Jt8tnyQXIXZaNEcLyyPRgyLwnF3rDZ8xuAA7Tmq-xHfS5zzyYg8hHkQM5nyJKLnjdcPL5X2GuXKtkIxIAZREtCuJZXiS0Gezif5JITJ2naUlmJSwiO2Eq8fofPhVqbmQ2JwtcNqSyOG5UUCeiGKogYRfzE61u9knfa_UFhCxBcmh3nEvsEgUJ12gwwT0mVf7ngGda9iKi5VJHU29eC0hy5PS5aE" />
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white">{{ doctor.doctor_name }}</h2>
+                <p class="text-slate-500 dark:text-slate-400">Doctor ID: {{ doctor.doctor_id }}</p>
+                <p class="text-slate-500 dark:text-slate-400">Specialization: {{ doctor.specialization_name }}</p>
+            </div>
+        </div>
+
+        <div x-data="{ tab: 'overview' }" class="space-y-8">
+
+            <!-- Tabs -->
+            <div class="border-b border-slate-200 dark:border-slate-700">
+                <nav aria-label="Tabs" class="-mb-px flex space-x-8">
+                    <button @click="tab = 'overview'"
+                        :class="tab === 'overview' 
+                ? 'border-primary text-primary border-b-2' 
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'"
+                        class="whitespace-nowrap py-4 px-1 text-sm font-medium border-b-2">
+                        Overview
+                    </button>
+
+                    <button @click="tab = 'appointments'"
+                        :class="tab === 'appointments' 
+                ? 'border-primary text-primary border-b-2' 
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'"
+                        class="whitespace-nowrap py-4 px-1 text-sm font-medium border-b-2">
+                        Appointments
+                    </button>
+                </nav>
+            </div>
+
+            <div x-show="tab === 'overview'" x-transition>
+                <div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
+                    <!-- Left column -->
+                    <div class="space-y-8">
+                        <section>
+                            <h3 class="mb-4 text-xl font-bold text-slate-900 dark:text-white">Demographics</h3>
+                            <div class="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <div>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400">Phone Number</p>
+                                    <p class="text-slate-800 dark:text-slate-200">{{ doctor.mobile_number }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400">Email</p>
+                                    <p class="text-slate-800 dark:text-slate-200">{{ doctor.email_id }}</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+
+            <div x-show="tab === 'appointments'" x-transition>
+                <section class="mt-8">
+                    <h3 class="mb-4 text-xl font-bold text-slate-900 dark:text-white">Appointments</h3>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-700 dark:text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-3" scope="col">Date</th>
+                                    <th class="px-6 py-3" scope="col">Time</th>
+                                    <th class="px-6 py-3" scope="col">Patient</th>
+                                    <th class="px-6 py-3" scope="col">Status</th>
+                                    <th class="px-6 py-3" scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in doctor.appointments %}
+                                <tr class="border-b bg-white dark:border-slate-700 dark:bg-slate-900/50">
+                                    <td class="px-6 py-4">{{ a.appointment_date }}</td>
+                                    <td class="px-6 py-4">{{ a.appointment_time }}</td>
+                                    <td class="px-6 py-4 font-medium">{{ a.patient_name }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-block rounded-full px-2 py-1 text-xs font-semibold
+                                {% if a.status_name == 'Scheduled' %} bg-blue-100 text-blue-800
+                                {% elif a.status_name == 'Completed' %} bg-green-100 text-green-800
+                                {% elif a.status_name == 'Cancelled' %} bg-red-100 text-red-800
+                                {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                            {{ a.status_name }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <a href="{% url 'appointment_detail' a.appointment_id %}"
+                                            class="p-2 rounded-full hover:bg-subtle-light dark:hover:bg-subtle-dark">
+                                            <span
+                                                class="material-symbols-outlined text-muted-light dark:text-muted-dark">more_horiz</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-muted-light dark:text-muted-dark">
+                                        No appointments found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock mainContent %}
+
+{% block internalScripts %}
+
+{% endblock internalScripts %}

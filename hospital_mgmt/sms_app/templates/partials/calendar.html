@@ -1,0 +1,131 @@
+<div class="w-full max-w-sm mx-auto">
+  <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Date</label>
+  <div
+    class="bg-background-light dark:bg-background-dark rounded-lg p-4 border border-gray-200 dark:border-gray-700/50">
+    <div class="flex items-center justify-between mb-4">
+      <button id="prevMonth"
+        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <p id="monthYear" class="font-bold text-sm text-gray-900 dark:text-white"></p>
+      <button id="nextMonth"
+        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+    <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-400">
+      <div>S</div>
+      <div>M</div>
+      <div>T</div>
+      <div>W</div>
+      <div>T</div>
+      <div>F</div>
+      <div>S</div>
+    </div>
+    <div id="calendarDays" class="grid grid-cols-7 gap-1 mt-2"></div>
+  </div>
+</div>
+
+<script>
+  const calendarDays = document.getElementById("calendarDays");
+  const monthYear = document.getElementById("monthYear");
+  const prevBtn = document.getElementById("prevMonth");
+  const nextBtn = document.getElementById("nextMonth");
+  const selectedDateInput = document.getElementById("selected_date"); // Hidden input
+
+  let today = new Date();
+  let currentMonth = today.getMonth();
+  let currentYear = today.getFullYear();
+
+  const minYear = today.getFullYear();
+  const maxYear = 2026;
+  const maxMonth = 11; // December
+
+  function renderCalendar(month, year) {
+    calendarDays.innerHTML = "";
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    monthYear.textContent = `${monthNames[month]} ${year}`;
+
+    const firstDay = new Date(year, month).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Empty slots for the first week
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement("div");
+      empty.classList.add("text-transparent");
+      empty.textContent = ".";
+      calendarDays.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const btn = document.createElement("button");
+      btn.textContent = day;
+      btn.className =
+        "h-10 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors w-full";
+
+      // Highlight today
+      if (
+        day === today.getDate() &&
+        month === today.getMonth() &&
+        year === today.getFullYear()
+      ) {
+        btn.classList.add("bg-primary", "text-white");
+      }
+
+      // Disable past dates
+      const date = new Date(year, month, day);
+      if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        btn.disabled = true;
+      }
+
+      // On click — select date
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#calendarDays button").forEach(b =>
+          b.classList.remove("bg-primary", "text-white")
+        );
+        btn.classList.add("bg-primary", "text-white");
+
+        const formattedDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        selectedDateInput.value = formattedDate; // 👈 Store selected date
+        console.log("Selected Date:", formattedDate);
+      });
+
+      calendarDays.appendChild(btn);
+    }
+
+    // Disable navigation outside range
+    prevBtn.disabled = (year === minYear && month <= today.getMonth());
+    nextBtn.disabled = (year === maxYear && month >= maxMonth);
+    prevBtn.classList.toggle("opacity-50", prevBtn.disabled);
+    nextBtn.classList.toggle("opacity-50", nextBtn.disabled);
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if (currentMonth === 0) {
+      currentMonth = 11;
+      currentYear--;
+    } else {
+      currentMonth--;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (currentMonth === 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else {
+      currentMonth++;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+
+  renderCalendar(currentMonth, currentYear);
+</script>
+

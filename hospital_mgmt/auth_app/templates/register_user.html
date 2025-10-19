@@ -1,0 +1,129 @@
+{% extends 'includes/auth_base.html' %}
+
+{% block mainContent %}
+
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-background-dark rounded-xl shadow-lg">
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <svg class="h-10 w-10 text-primary" fill="none" viewBox="0 0 48 48"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z"
+                            fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Welcome to HealthHub</h1>
+                <p class="mt-2 text-center text-sm text-muted-light dark:text-muted-dark">
+                    Create a new staff account
+                </p>
+            </div>
+            <form action="#" class="mt-8 space-y-6" method="POST">
+                {% csrf_token %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="name">Name</label>
+                            <input autocomplete="name"
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark placeholder-muted-light dark:placeholder-muted-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="name" name="name" placeholder="Enter full name" required="" type="text" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="email-address">Email ID</label>
+                            <input autocomplete="email"
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark placeholder-muted-light dark:placeholder-muted-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="email-address" name="email" placeholder="Enter email address" required=""
+                                type="email" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="mobile-number">Mobile Number</label>
+                            <input autocomplete="mobile"
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark placeholder-muted-light dark:placeholder-muted-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="mobile-number" name="mobile" placeholder="Enter Mobile Number" required=""
+                                type="number" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="role">Role</label>
+                            <select
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="role" name="role" required="" onchange="toggleSpecialization()">
+                                <option disabled="" selected="">Select role</option>
+                                {% for role in roles %}
+                                    <option>{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="specialization">Specialisation</label>
+                            <select
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="specialization" name="specialization" required="">
+                                <option disabled="" selected="">Select specialisation</option>
+                                {% for spec in specializations %}
+                                    <option>{{ spec.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="password">Password</label>
+                            <input autocomplete="new-password"
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark placeholder-muted-light dark:placeholder-muted-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="password" name="password" placeholder="Enter password" required=""
+                                type="password" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" for="confirm-password">Confirm
+                                Password</label>
+                            <input autocomplete="new-password"
+                                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-border-light dark:border-border-dark bg-input-light dark:bg-input-dark placeholder-muted-light dark:placeholder-muted-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary text-sm"
+                                id="confirm-password" name="confirm-password" placeholder="Confirm password" required=""
+                                type="password" />
+                        </div>
+                    </div>
+
+                    {% if messages %}
+                    <div class="text-red-600">
+                        {% for message in messages %}
+                        <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <button
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary transition-colors"
+                            type="submit">
+                            Register Staff Member
+                        </button>
+                    </div>
+                </form>
+            <p class="mt-6 text-center text-sm">
+                <a class="font-medium text-primary hover:text-primary/90" href="{% url 'auth_login' %}">
+                    User login
+                </a>
+            </p>
+        </div>
+    </div>
+
+{% endblock mainContent %}
+
+
+
+{% block internalScripts %}
+
+    <script>
+            function toggleSpecialization() {
+            const role = document.getElementById("role").value;
+            const specSelect = document.getElementById("specialization");
+            if(role.toLowerCase() === "doctor") {
+                specSelect.parentElement.style.display = "block";
+            } else {
+                specSelect.parentElement.style.display = "none";
+            }
+        }
+        // Hide specialization initially if role is not doctor
+        document.addEventListener("DOMContentLoaded", () => {
+            toggleSpecialization();
+        });
+    </script>
+
+{% endblock internalScripts %}
